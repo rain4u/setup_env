@@ -1,0 +1,142 @@
+#!/bin/bash
+
+VIMRC_PATH="$HOME/.vimrc"
+VIMRC_BK_PATH="$HOME/.vimrc_bk"
+VIMRC_NEW_PATH="vimrc"
+
+VUNDLE_REPRO="https://github.com/VundleVim/Vundle.vim.git"
+VUNDLE_DIR="$HOME/.vim/bundle/Vundle.vim"
+
+exit_if_error()
+{
+    if [ "$?" -ne "0" ]; then
+        echo $1
+        exit
+    fi
+}
+
+### Vundle ###
+
+vundle_installed()
+{
+    if [ -d $VUNDLE_DIR ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+install_vundle()
+{
+    echo "Install vundle"
+    git clone -q $VUNDLE_REPRO $VUNDLE_DIR
+    exit_if_error "Failed to install vundle"
+}
+
+uninstall_vundle()
+{
+    # TODO: only uninstall vundle when vundle is installed by script.
+
+    echo "Uninstall vundle"
+    rm -rf $VUNDLE_DIR
+    exit_if_error "Failed to uninstall vundle"
+}
+
+install_vundle_plugins()
+{
+    echo "Install vundle plugins"
+    vim +PluginInstall +qall &>/dev/null
+    exit_if_error "Failed to install vundle plugins"
+}
+
+### vimrc ###
+
+vimrc_existed()
+{
+    if [ -e $VIMRC_PATH ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+backup_vimrc()
+{
+    echo "Backup original vimrc"
+    cp $VIMRC_PATH $VIMRC_BK_PATH
+    exit_if_error "Failed to backup original vimrc"
+}
+
+copy_new_vimrc()
+{
+    echo "Copy new vimrc"
+    cp $VIMRC_NEW_PATH $VIMRC_PATH
+    exit_if_error "Failed to copy new vimrc"
+}
+
+vimrc_bk_existed()
+{
+    if [ -e $VIMRC_BK_PATH ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+recover_vimrc()
+{
+    echo "Recover vimrc"
+    mv $VIMRC_BK_PATH $VIMRC_PATH
+    exit_if_error "Failed to recover vimrc"
+}
+
+### Main handlers ###
+
+install()
+{
+    if ! vundle_installed ; then
+        install_vundle
+    fi
+
+    if vimrc_existed ; then
+        backup_vimrc
+    fi
+
+    copy_new_vimrc
+
+    install_vundle_plugins
+
+    echo "Dev env installed"
+}
+
+uninstall()
+{
+    if vimrc_bk_existed ; then
+        recover_vimrc
+    fi
+
+    uninstall_vundle
+
+    echo "Dev env uninstalled"
+}
+
+usage()
+{
+    echo "usage: ./env {install|uninstall}"
+}
+
+### Main function ###
+
+main()
+{
+    case $1 in
+        "install")
+            install ;;
+        "uninstall")
+            uninstall ;;
+        *)
+            usage ;;
+    esac
+}
+
+main $1
