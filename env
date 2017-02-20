@@ -1,12 +1,5 @@
 #!/bin/bash
 
-VIMRC_PATH="$HOME/.vimrc"
-VIMRC_BK_PATH="$HOME/.vimrc_bk"
-VIMRC_NEW_PATH="vimrc"
-
-VUNDLE_REPRO="https://github.com/VundleVim/Vundle.vim.git"
-VUNDLE_DIR="$HOME/.vim/bundle/Vundle.vim"
-
 exit_if_error()
 {
     if [ "$?" -ne "0" ]; then
@@ -16,6 +9,9 @@ exit_if_error()
 }
 
 ### Vundle ###
+
+VUNDLE_REPRO="https://github.com/VundleVim/Vundle.vim.git"
+VUNDLE_DIR="$HOME/.vim/bundle/Vundle.vim"
 
 vundle_installed()
 {
@@ -50,6 +46,10 @@ install_vundle_plugins()
 }
 
 ### vimrc ###
+
+VIMRC_PATH="$HOME/.vimrc"
+VIMRC_BK_PATH="$HOME/.vimrc_bk"
+VIMRC_NEW_PATH="vimrc"
 
 vimrc_existed()
 {
@@ -90,6 +90,51 @@ recover_vimrc()
     exit_if_error "Failed to recover vimrc"
 }
 
+### gitconfig ###
+
+GITCONFIG_PATH="$HOME/.gitconfig"
+GITCONFIG_BK_PATH="$HOME/.gitconfig_bk"
+GITCONFIG_NEW_PATH="gitconfig"
+
+gitconfig_existed()
+{
+    if [ -e $GITCONFIG_PATH ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+backup_gitconfig()
+{
+    echo "Backup original gitconfig"
+    cp $GITCONFIG_PATH $GITCONFIG_BK_PATH
+    exit_if_error "Failed to backup original gitconfig"
+}
+
+copy_new_gitconfig()
+{
+    echo "Copy new gitconfig"
+    cp $GITCONFIG_NEW_PATH $GITCONFIG_PATH
+    exit_if_error "Failed to copy new gitconfig"
+}
+
+gitconfig_bk_existed()
+{
+    if [ -e $GITCONFIG_BK_PATH ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+recover_gitconfig()
+{
+    echo "Recover gitconfig"
+    mv $GITCONFIG_BK_PATH $GITCONFIG_PATH
+    exit_if_error "Failed to recover gitconfig"
+}
+
 ### Main handlers ###
 
 install()
@@ -101,10 +146,14 @@ install()
     if vimrc_existed ; then
         backup_vimrc
     fi
-
     copy_new_vimrc
 
     install_vundle_plugins
+
+    if gitconfig_existed ; then
+        backup_gitconfig
+    fi
+    copy_new_gitconfig
 
     echo "Dev env installed"
 }
@@ -116,6 +165,10 @@ uninstall()
     fi
 
     uninstall_vundle
+
+    if gitconfig_bk_existed ; then
+        recover_gitconfig
+    fi
 
     echo "Dev env uninstalled"
 }
