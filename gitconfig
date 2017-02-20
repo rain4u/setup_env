@@ -3,3 +3,11 @@
 	name = rain4u
 [core]
 	editor = vim
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	ci = commit
+	unstage = reset HEAD --
+	last = log -1 HEAD
+	sdiff = diff --staged
